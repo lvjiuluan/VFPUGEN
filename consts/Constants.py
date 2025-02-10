@@ -2,6 +2,7 @@ import os
 
 # 不同平台跑，配置一下，项目的根路径
 # ROOT_PATH = r'D:\PyCharmProjects\VFPUGEN'
+# ROOT_PATH = r'D:\PycharmProjects\VFPUGEN'
 # ROOT_PATH = r'/root/semi/VFPUGEN'
 ROOT_PATH = r'/root/VFPUGEN'
 # ROOT_PATH = r'C:\Users\Administrator\PycharmProjects\VFPUGEN'

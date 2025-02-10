@@ -19,7 +19,7 @@ conda install -c anaconda ipykernel
 python -m ipykernel install --user --name=fate_env
 
 # 下载项目
-git clone https://github.com/lvjiuluan/VFPUMC02.git
+git clone https://github.com/lvjiuluan/VFPUGEN.git
 
 
 # jupyter 单元格顶部固定代码

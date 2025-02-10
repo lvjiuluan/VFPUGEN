@@ -23,9 +23,10 @@ _clean (缺失值、 处理，编码，归一化等)
 """
 import sys
 
-sys.path.append('D:\PyCharmProjects\VFPUMC02')
-sys.path.append(r'C:\Users\Administrator\PycharmProjects\VFPUMC02')
-sys.path.append(r'/root/VFPUMC02')
+sys.path.append('D:\PyCharmProjects\VFPUGEN')
+sys.path.append(r'C:\Users\Administrator\PycharmProjects\VFPUGEN')
+sys.path.append(r'/root/VFPUGEN')
+sys.path.append(r'D:\PycharmProjects\VFPUGEN')
 
 from consts.Constants import DATASETS_PATH
 from utils.DatasetsPrepareUtils import download_file
@@ -40,6 +41,7 @@ category_columns = ['job', 'marital', 'education', 'default', 'housing', 'loan',
                     'poutcome']
 numerical_columns = ['age', 'duration', 'campaign', 'pdays', 'previous', 'emp.var.rate', 'cons.price.idx',
                      'cons.conf.idx', 'euribor3m', 'nr.employed']
+
 
 # census
 category_columns = ['workclass', 'education', 'marital-status', 'occupation', 'relationship', 'race', 'sex',
