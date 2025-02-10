@@ -13,6 +13,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.preprocessing import LabelEncoder
 
+
 def prepare_updated_pollution_dataset(file_path):
     # 使用os.path.join构建文件路径
     csv_file_path = os.path.join(file_path, 'updated_pollution_dataset.csv')
@@ -268,7 +269,7 @@ def preprocess_features(df, category_columns, numerical_columns, target_variable
     # 数值类进行Standardscaler编码
     scaler = StandardScaler()
     scaler.fit(df[numerical_columns])
-    df_numerical_scaler = pd.DataFrame(scaler.transform(df[numerical_columns]),columns=scaler.feature_names_in_)
+    df_numerical_scaler = pd.DataFrame(scaler.transform(df[numerical_columns]), columns=scaler.feature_names_in_)
     target = df[target_variable]
 
     df_one = pd.concat([df_category_enc, df_numerical_scaler, target.to_frame()], axis=1)
@@ -302,10 +303,13 @@ def split_list_by_rate(lst, rate):
     start = 0
 
     # 按照rate的比例来分割
+    i = 0
     for r in rate:
         # 当前分割的结束位置
         end = start + int(r * n)
         splits.append(lst[start:end])
+        print(f'第{i + 1}个列表的长度为{len(lst[start:end])}')
         start = end
+        i += 1
 
     return splits
