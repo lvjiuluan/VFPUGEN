@@ -46,7 +46,17 @@ download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/m
 df = pd.read_csv(os.path.join(DATASETS_PATH,'bank_orig.csv'))
 df = preprocess_dataframe(df)
 df.to_csv(os.path.join(DATASETS_PATH,'bank_clean.csv'))
+
 # census
+df = pd.read_csv(os.path.join(DATASETS_PATH,'census_orig.csv'))
+df = preprocess_dataframe(df)
+df.to_csv(os.path.join(DATASETS_PATH,'census_clean.csv'))
+
+# credit
+df = pd.read_csv(os.path.join(DATASETS_PATH,'credit_orig.csv'),skiprows=1)
+df = df.drop(columns=['ID'])
+df = preprocess_dataframe(df)
+df.to_csv(os.path.join(DATASETS_PATH,'credit_clean.csv'))
 
 
 

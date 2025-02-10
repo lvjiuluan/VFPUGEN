@@ -9,6 +9,8 @@ from urllib.parse import urlparse
 import numpy as np
 from sklearn.metrics import f1_score
 from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
 
 def prepare_updated_pollution_dataset(file_path):
     # 使用os.path.join构建文件路径
@@ -80,7 +82,6 @@ def reorder_columns(df, new_columns):
         return df
     else:
         raise ValueError("new_columns必须包含df的所有列")
-
 
 
 def evaluate_imputed_data_various_metric(orig: pd.DataFrame, imputed: pd.DataFrame, discrete_columns: list) -> dict:
@@ -247,5 +248,27 @@ def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
     # 统一标签列名为 'y'
     df = df.rename(columns={label_col: 'y'})
+
+    return df
+
+
+def preprocess_features(df, category_columns, numerical_columns, target_variable):
+    # 检查category_columns和numerical_columns的长度之和是否等于特征列的数量
+    feature_columns = category_columns + numerical_columns
+    if len(feature_columns) != df.shape[1] - 1:
+        raise ValueError(
+            "The sum of category_columns and numerical_columns length must equal the number of feature columns.")
+    # 类别列进行Onehot编码
+    enc = OneHotEncoder()
+    enc.fit(df[category_columns])
+    df_category_enc = pd.DataFrame(enc.transform(df[category_columns]).A, columns=enc.get_feature_names_out())
+    df_category_enc = df_category_enc.astype('int')
+    # 数值类进行Standardscaler编码
+    scaler = StandardScaler()
+    scaler.fit(df[numerical_columns])
+    df_numerical_scaler = pd.DataFrame(scaler.transform(df[numerical_columns]),columns=scaler.feature_names_in_)
+    target = df[target_variable]
+
+    df = pd.concat([df_category_enc, df_numerical_scaler, target.to_frame()], axis=1)
 
     return df
