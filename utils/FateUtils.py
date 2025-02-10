@@ -19,7 +19,7 @@ from utils.pklUtils import *
 import ast
 import json
 
-from Logger import logger
+from .Logger import logger
 
 
 def fate_construct_df(XA, XB, y=None):
