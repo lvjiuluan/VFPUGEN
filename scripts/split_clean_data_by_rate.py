@@ -11,8 +11,8 @@
     2. 脚本中会对每个数据集进行日志记录，便于排查数据读取和输出问题
 """
 
-
 import sys
+
 sys.path.append(r'D:\PyCharmProjects\VFPUGEN')
 sys.path.append(r'/root/VFPUGEN')
 sys.path.append(r'D:\PycharmProjects\VFPUGEN')
@@ -31,7 +31,8 @@ import argparse
 import logging
 import pandas as pd
 
-#!/usr/bin/env python
+
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 
@@ -86,6 +87,8 @@ def process_dataset(dataset_name, input_file, output_file_A, output_file_B,
     df_B = df[[col for col in B_columns if col in df.columns]]
 
     try:
+        logging.info(f'df_A 的形状为{df_A.shape}')
+        logging.info(f'df_B 的形状为{df_B.shape}')
         df_A.to_csv(output_file_A, index=False)
         df_B.to_csv(output_file_B, index=False)
         logging.info(f"{dataset_name} 处理完成：A 方数据保存至 {output_file_A}；B 方数据保存至 {output_file_B}")
@@ -161,7 +164,3 @@ if __name__ == '__main__':
         exit(1)
 
     main(rate_A=args.rate_A, rate_B=args.rate_B, datasets_path=DATASETS_PATH)
-
-
-
-

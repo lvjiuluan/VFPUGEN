@@ -293,23 +293,34 @@ def label_encode_columns(df: pd.DataFrame, category_columns: list) -> pd.DataFra
     return df
 
 
-def split_list_by_rate(lst, rate):
-    # 先打乱列表
-    random.shuffle(lst)
+def split_list_by_rate(lst, rates):
+    """
+    将列表 lst 随机打乱后，按照 rates 中指定的比例拆分成多个子列表。
+    为了避免整数除法造成的元素遗漏，先按 int 计算，再根据小数部分的大小分配剩余元素。
 
-    # 计算每一份的大小
+    参数：
+        lst: 需要拆分的列表
+        rates: 拆分比例列表，所有比例和必须等于1
+
+    返回：
+        拆分后的列表集合（列表组成的列表）
+    """
+    random.shuffle(lst)
     n = len(lst)
+    # 初步分配各部分的元素数（向下取整）
+    counts = [int(r * n) for r in rates]
+    remainder = n - sum(counts)
+    if remainder > 0:
+        # 计算每部分的小数余量，用于判断哪些部分优先补齐
+        remainders = [(r * n - int(r * n), i) for i, r in enumerate(rates)]
+        # 按余量从大到小排序
+        remainders.sort(reverse=True)
+        for j in range(remainder):
+            counts[remainders[j][1]] += 1
+
     splits = []
     start = 0
-
-    # 按照rate的比例来分割
-    i = 0
-    for r in rate:
-        # 当前分割的结束位置
-        end = start + int(r * n)
-        splits.append(lst[start:end])
-        print(f'第{i + 1}个列表的长度为{len(lst[start:end])}')
-        start = end
-        i += 1
-
+    for count in counts:
+        splits.append(lst[start:start + count])
+        start += count
     return splits
