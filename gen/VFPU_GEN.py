@@ -49,6 +49,8 @@ class VFPU_GEN:
             ctgan,
             complete_df_A,
             incomplete_df_B,
+            category_columns,
+            numerical_columns,
             logger_level='ERROR'
     ):
         """
@@ -66,6 +68,8 @@ class VFPU_GEN:
             完整数据集 A
         incomplete_df_B : pd.DataFrame
             不完整数据集 B
+        discrete_columns_B: List
+            不完整数据集 B 的分类列列名
         logger_level : str
             日志级别，如 'INFO', 'DEBUG', 'ERROR'，默认 'ERROR'
         """

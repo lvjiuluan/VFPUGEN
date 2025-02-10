@@ -1174,3 +1174,32 @@ def transform_and_save_df(df, split_cols,file_path, name_prefix, name_suffix):
     df_B.to_csv(os.path.join(file_path,name_prefix+"df_B"+name_suffix),index=None)
 
     return df_A, df_B, y
+
+
+def get_column_types(df):
+    """
+    该函数用于将输入DataFrame中的列划分为分类列和数值列。
+
+    分类列的定义为：
+    1. 数据类型为int。
+    2. 列中仅包含0和1两个值。
+
+    其余列则被归类为数值列。
+
+    :param df: 输入的pandas DataFrame对象。
+    :return: 一个包含两个元素的元组，第一个元素是分类列的列表 (category_columns)，
+             第二个元素是数值列的列表 (numerical_columns)。
+    """
+    category_columns = []
+    numerical_columns = []
+    for col in df.columns:
+        if df[col].dtype == 'int':
+            unique_values = df[col].unique()
+            if set(unique_values).issubset({0, 1}) and len(unique_values) <= 2:
+                category_columns.append(col)
+            else:
+                numerical_columns.append(col)
+        else:
+            numerical_columns.append(col)
+    print(f'len(category_columns) = {len(category_columns)}, len(numerical_columns) = {len(numerical_columns)}')
+    return category_columns, numerical_columns
