@@ -15,13 +15,17 @@ data_prepare_script.py
 
 _orig (最原始的版本，刚下载)
 
-_clean (缺失值、 处理，编码，归一化等)
+_clean (缺失值、处理，标签列编码，标签列统一编码为y) 特征列 + y
 
+_coded (编码，归一化等)
 
 作者：lvjiuluan
 日期：2025年2月9日
 """
+import os
 import sys
+
+import pandas as pd
 
 sys.path.append('D:\PyCharmProjects\VFPUGEN')
 sys.path.append(r'C:\Users\Administrator\PycharmProjects\VFPUGEN')
@@ -35,6 +39,14 @@ from utils.DatasetsPrepareUtils import download_file
 download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/main/bank_orig.csv', DATASETS_PATH, 'bank_orig.csv')
 download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/main/census_orig.csv', DATASETS_PATH, 'census_orig.csv')
 download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/main/credit_orig.csv', DATASETS_PATH, 'credit_orig.csv')
+
+
+# 缺失值、处理，标签列编码，标签列统一编码为y 特征列 + y
+df = pd.read_csv(os.path.join(DATASETS_PATH,'bank_orig.csv'))
+
+
+
+# 编码，归一化
 
 # bank
 category_columns = ['job', 'marital', 'education', 'default', 'housing', 'loan', 'contact', 'month', 'day_of_week',

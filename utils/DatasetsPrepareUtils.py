@@ -214,3 +214,39 @@ def evaluate_imputed_data_various_metric(orig: pd.DataFrame, imputed: pd.DataFra
         'rmse_numerical_for_f1': rmse_numerical_for_f1
     }
     return metrics
+
+
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+
+def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    对输入的 DataFrame 进行数据预处理：
+    1. 处理缺失值（数值型填充均值，类别型填充众数）
+    2. 对标签列（最后一列）进行标签编码，并转换为 int 类型
+    3. 确保最后一列的列名为 'y'
+
+    参数:
+    df (pd.DataFrame): 输入的 DataFrame，最后一列为标签列
+
+    返回:
+    pd.DataFrame: 处理后的 DataFrame，最后一列的列名为 'y'
+    """
+    df = df.copy()  # 避免修改原始 df
+    # 处理缺失值
+    for col in df.columns:
+        if df[col].dtype == 'object':  # 类别型数据
+            df[col].fillna(df[col].mode()[0], inplace=True)  # 用众数填充
+        else:  # 数值型数据
+            df[col].fillna(df[col].mean(), inplace=True)  # 用均值填充
+
+    # 处理标签列
+    label_col = df.columns[-1]  # 获取最后一列的列名
+    le = LabelEncoder()
+    df[label_col] = le.fit_transform(df[label_col])  # 进行标签编码
+    df[label_col] = df[label_col].astype(int)  # 转换为 int 类型
+
+    # 统一标签列名为 'y'
+    df.rename(columns={label_col: 'y'}, inplace=True)
+
+    return df
