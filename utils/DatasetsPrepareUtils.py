@@ -282,7 +282,8 @@ def preprocess_features(df, category_columns, numerical_columns, target_variable
     print("开始对类别特征进行 One-Hot 编码...")
     # 进行 One-Hot 编码
     enc = OneHotEncoder()
-    df_category_enc = pd.DataFrame(enc.fit_transform(df[category_columns]), columns=enc.get_feature_names_out()).astype(int)
+    df_category_enc = pd.DataFrame(enc.fit_transform(df[category_columns]),
+                                   columns=enc.get_feature_names_out()).astype(int)
 
     print("类别特征 One-Hot 编码完成。")
 
@@ -290,7 +291,7 @@ def preprocess_features(df, category_columns, numerical_columns, target_variable
     # 进行标准化
     scaler = StandardScaler()
     df_numerical_scaled = pd.DataFrame(scaler.fit_transform(df[numerical_columns]),
-                                       columns=numerical_columns)
+                                       columns=scaler.feature_names_in_)
     print("数值特征标准化处理完成。")
 
     # 组合编码后的特征数据
