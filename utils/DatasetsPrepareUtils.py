@@ -261,8 +261,9 @@ def preprocess_features(df, category_columns, numerical_columns, target_variable
     # 类别列进行Onehot编码
     enc = OneHotEncoder()
     enc.fit(df[category_columns])
-    df_category_enc = pd.DataFrame(enc.transform(df[category_columns]).A, columns=enc.get_feature_names_out())
+    df_category_enc = pd.DataFrame(enc.transform(df[category_columns]).toarray(), columns=enc.get_feature_names_out())
     df_category_enc = df_category_enc.astype('int')
+
     # 数值类进行Standardscaler编码
     scaler = StandardScaler()
     scaler.fit(df[numerical_columns])
