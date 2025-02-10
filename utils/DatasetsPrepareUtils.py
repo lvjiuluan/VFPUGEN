@@ -282,8 +282,8 @@ def preprocess_features(df, category_columns, numerical_columns, target_variable
     print("开始对类别特征进行 One-Hot 编码...")
     # 进行 One-Hot 编码
     enc = OneHotEncoder()
-    df_category_enc = pd.DataFrame(enc.fit_transform(df[category_columns]),
-                                   columns=enc.get_feature_names_out(category_columns)).astype(int)
+    df_category_enc = pd.DataFrame(enc.transform(df[category_columns]), columns=enc.get_feature_names_out()).astype(int)
+
     print("类别特征 One-Hot 编码完成。")
 
     print("开始对数值特征进行标准化处理...")
