@@ -17,7 +17,7 @@ _orig (最原始的版本，刚下载)
 
 _clean (缺失值、处理，标签列编码，标签列统一编码为y) 特征列 + y
 
-_coded (编码，归一化等)
+_coded_one (one-hot 编码，归一化等)
 
 作者：lvjiuluan
 日期：2025年2月9日
@@ -33,7 +33,7 @@ sys.path.append(r'/root/VFPUGEN')
 sys.path.append(r'D:\PycharmProjects\VFPUGEN')
 
 from consts.Constants import DATASETS_PATH
-from utils.DatasetsPrepareUtils import download_file, preprocess_dataframe
+from utils.DatasetsPrepareUtils import download_file, preprocess_dataframe, preprocess_features
 
 # 下载原始csv文件
 download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/main/bank_orig.csv', DATASETS_PATH, 'bank_orig.csv')
@@ -58,23 +58,32 @@ df = df.drop(columns=['ID'])
 df = preprocess_dataframe(df)
 df.to_csv(os.path.join(DATASETS_PATH,'credit_clean.csv'),index=None)
 
-
-
-# 编码，归一化
+# one-hot 编码，归一化
 
 # bank
+df = pd.read_csv(os.path.join(DATASETS_PATH,'bank_clean.csv'))
 category_columns = ['job', 'marital', 'education', 'default', 'housing', 'loan', 'contact', 'month', 'day_of_week',
                     'poutcome']
 numerical_columns = ['age', 'duration', 'campaign', 'pdays', 'previous', 'emp.var.rate', 'cons.price.idx',
                      'cons.conf.idx', 'euribor3m', 'nr.employed']
-
+target_variable = 'y'
+df = preprocess_features(df,category_columns,numerical_columns,target_variable)
+df.to_csv(os.path.join(DATASETS_PATH,'bank_coded_one.csv'),index=None)
 
 # census
+df = pd.read_csv(os.path.join(DATASETS_PATH,'census_clean.csv'))
 category_columns = ['workclass', 'education', 'marital-status', 'occupation', 'relationship', 'race', 'sex',
                     'native-country']
 numerical_columns = ['age', 'fnlwgt', 'education-num', 'capital-gain', 'capital-loss', 'hours-per-week']
+target_variable = 'y'
+df = preprocess_features(df,category_columns,numerical_columns,target_variable)
+df.to_csv(os.path.join(DATASETS_PATH,'census_coded_one.csv'),index=None)
 
 # credit
+df = pd.read_csv(os.path.join(DATASETS_PATH,'credit_clean.csv'))
 category_columns = ['SEX', 'EDUCATION', 'MARRIAGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6']
 numerical_columns = ['LIMIT_BAL', 'AGE', 'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5', 'BILL_AMT6',
                      'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6']
+target_variable = 'y'
+df = preprocess_features(df,category_columns,numerical_columns,target_variable)
+df.to_csv(os.path.join(DATASETS_PATH,'credit_coded_one.csv'),index=None)
