@@ -255,41 +255,80 @@ def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def preprocess_features(df, category_columns, numerical_columns, target_variable):
-    # 检查category_columns和numerical_columns的长度之和是否等于特征列的数量
+    """
+    预处理数据特征，包括：
+    1. 对类别特征进行 One-Hot 编码
+    2. 对数值特征进行标准化
+    3. 返回经过 One-Hot 编码和标准化后的特征数据，以及仅进行标签编码的类别特征数据
+
+    参数：
+    df: pd.DataFrame - 输入数据
+    category_columns: list - 需要进行编码的类别特征列
+    numerical_columns: list - 需要进行标准化的数值特征列
+    target_variable: str 或 None - 目标变量列名（如果有）
+
+    返回：
+    df_encoded: pd.DataFrame - One-Hot 编码和标准化后的数据
+    df_label_encoded: pd.DataFrame - 仅进行 LabelEncoder 编码的类别数据
+    """
+
+    # 合并类别特征列和数值特征列
     feature_columns = category_columns + numerical_columns
-    if len(feature_columns) != df.shape[1] - 1:
-        raise ValueError(
-            "The sum of category_columns and numerical_columns length must equal the number of feature columns.")
-    # 类别列进行Onehot编码
-    enc = OneHotEncoder()
-    enc.fit(df[category_columns])
-    df_category_enc = pd.DataFrame(enc.transform(df[category_columns]).toarray(), columns=enc.get_feature_names_out())
-    df_category_enc = df_category_enc.astype('int')
 
-    # 数值类进行Standardscaler编码
+    # 校验特征列数量是否正确
+    if len(feature_columns) != df.shape[1] - (1 if target_variable else 0):
+        raise ValueError("错误：类别特征列和数值特征列的总数必须等于数据中的特征列数量。")
+
+    print("开始对类别特征进行 One-Hot 编码...")
+    # 进行 One-Hot 编码
+    enc = OneHotEncoder(sparse=False)
+    df_category_enc = pd.DataFrame(enc.fit_transform(df[category_columns]),
+                                   columns=enc.get_feature_names_out(category_columns)).astype(int)
+    print("类别特征 One-Hot 编码完成。")
+
+    print("开始对数值特征进行标准化处理...")
+    # 进行标准化
     scaler = StandardScaler()
-    scaler.fit(df[numerical_columns])
-    df_numerical_scaler = pd.DataFrame(scaler.transform(df[numerical_columns]), columns=scaler.feature_names_in_)
-    target = df[target_variable]
+    df_numerical_scaled = pd.DataFrame(scaler.fit_transform(df[numerical_columns]),
+                                       columns=numerical_columns)
+    print("数值特征标准化处理完成。")
 
-    df_one = pd.concat([df_category_enc, df_numerical_scaler, target.to_frame()], axis=1)
+    # 组合编码后的特征数据
+    if target_variable is not None:
+        df_onehot_encoded = pd.concat([df_category_enc, df_numerical_scaled, df[target_variable].to_frame()], axis=1)
+    else:
+        df_onehot_encoded = pd.concat([df_category_enc, df_numerical_scaled], axis=1)
 
-    df_label = label_encode_columns(df, category_columns)
+    print("开始对类别特征进行标签编码...")
+    # 进行标签编码
+    df_label_encoded = label_encode_columns(df.copy(), category_columns)
+    print("类别特征标签编码完成。")
 
-    return df_one, df_label
+    return df_onehot_encoded, df_label_encoded
 
 
 def label_encode_columns(df: pd.DataFrame, category_columns: list) -> pd.DataFrame:
-    # 创建LabelEncoder实例
+    """
+    对类别特征进行标签编码（Label Encoding）。
+
+    参数：
+    df: pd.DataFrame - 输入数据
+    category_columns: list - 需要进行标签编码的类别特征列
+
+    返回：
+    df: pd.DataFrame - 经过标签编码后的数据
+    """
+
     encoder = LabelEncoder()
 
-    # 对每个类别列进行标签编码
     for col in category_columns:
         if col in df.columns:
+            print(f"对列 '{col}' 进行标签编码...")
             df[col] = encoder.fit_transform(df[col])
         else:
-            print(f"Warning: Column '{col}' not found in DataFrame")
+            print(f"⚠️ 警告：列 '{col}' 在 DataFrame 中未找到，跳过该列。")
 
+    print("所有类别特征标签编码完成。")
     return df
 
 

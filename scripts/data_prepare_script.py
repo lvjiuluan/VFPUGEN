@@ -68,7 +68,7 @@ numerical_columns = ['age', 'duration', 'campaign', 'pdays', 'previous', 'emp.va
                      'cons.conf.idx', 'euribor3m', 'nr.employed']
 target_variable = 'y'
 df_one, df_label = preprocess_features(df,category_columns,numerical_columns,target_variable)
-df_one.to_csv(os.path.join(DATASETS_PATH,'bank_coded_one.csv'),index=None)
+df_one.to_csv(os.path.join(DATASETS_PATH,'bank_coded_onehot.csv'),index=None)
 df_label.to_csv(os.path.join(DATASETS_PATH,'bank_coded_label.csv'),index=None)
 
 # census
@@ -78,7 +78,7 @@ category_columns = ['workclass', 'education', 'marital-status', 'occupation', 'r
 numerical_columns = ['age', 'fnlwgt', 'education-num', 'capital-gain', 'capital-loss', 'hours-per-week']
 target_variable = 'y'
 df_one, df_label = preprocess_features(df,category_columns,numerical_columns,target_variable)
-df_one.to_csv(os.path.join(DATASETS_PATH,'census_coded_one.csv'),index=None)
+df_one.to_csv(os.path.join(DATASETS_PATH,'census_coded_onehot.csv'),index=None)
 df_label.to_csv(os.path.join(DATASETS_PATH,'census_coded_label.csv'),index=None)
 
 # credit
@@ -88,5 +88,5 @@ numerical_columns = ['LIMIT_BAL', 'AGE', 'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 
                      'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6']
 target_variable = 'y'
 df_one, df_label = preprocess_features(df,category_columns,numerical_columns,target_variable)
-df_one.to_csv(os.path.join(DATASETS_PATH,'credit_coded_one.csv'),index=None)
+df_one.to_csv(os.path.join(DATASETS_PATH,'credit_coded_onehot.csv'),index=None)
 df_label.to_csv(os.path.join(DATASETS_PATH,'credit_coded_label.csv'),index=None)
