@@ -1,5 +1,5 @@
 import os
-from random import random
+import random
 
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
