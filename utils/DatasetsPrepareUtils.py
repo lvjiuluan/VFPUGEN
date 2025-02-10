@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.metrics import f1_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-
+from sklearn.preprocessing import LabelEncoder
 
 def prepare_updated_pollution_dataset(file_path):
     # 使用os.path.join构建文件路径
@@ -270,6 +270,22 @@ def preprocess_features(df, category_columns, numerical_columns, target_variable
     df_numerical_scaler = pd.DataFrame(scaler.transform(df[numerical_columns]),columns=scaler.feature_names_in_)
     target = df[target_variable]
 
-    df = pd.concat([df_category_enc, df_numerical_scaler, target.to_frame()], axis=1)
+    df_one = pd.concat([df_category_enc, df_numerical_scaler, target.to_frame()], axis=1)
+
+    df_label = label_encode_columns(df, category_columns)
+
+    return df_one, df_label
+
+
+def label_encode_columns(df: pd.DataFrame, category_columns: list) -> pd.DataFrame:
+    # 创建LabelEncoder实例
+    encoder = LabelEncoder()
+
+    # 对每个类别列进行标签编码
+    for col in category_columns:
+        if col in df.columns:
+            df[col] = encoder.fit_transform(df[col])
+        else:
+            print(f"Warning: Column '{col}' not found in DataFrame")
 
     return df
