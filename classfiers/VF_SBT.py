@@ -4,7 +4,7 @@ from consts.Constants import *
 from utils.pklUtils import *
 import subprocess
 import sys
-
+from utils.Logger import Logger
 
 class VF_SBT():
     def __init__(self, config):
@@ -15,10 +15,12 @@ class VF_SBT():
             sbt_config = load_config(SBT_CONFIGS_PATH)
             sbt_config.update(config)
             self.config = sbt_config
+            log_level = config.get('log_level', 'ERROR')
+            self.logger = Logger.create_new_logger(log_level)
             self.result = None
             self.objective = None
         except Exception as e:
-            print(f"初始化时发生错误: {e}")
+            self.logger.info(f"初始化时发生错误: {e}")
             raise
 
     def fit(self, XA, XB, y):
@@ -33,9 +35,9 @@ class VF_SBT():
             save_config(self.config, SBT_CONFIGS_PATH)
             A_df, B_df = fate_construct_df(XA, XB, y)
             save_host_guest_dataframes(A_df, B_df, A_host_train_path, B_guest_train_path)
-            print("VF_SBT训练结束")
+            self.logger.info("VF_SBT训练结束")
         except Exception as e:
-            print(f"训练时发生错误: {e}")
+            self.logger.info(f"训练时发生错误: {e}")
             raise
 
     def predict(self, XA, XB):
@@ -63,7 +65,7 @@ class VF_SBT():
         try:
             A_df, B_df = fate_construct_df(XA, XB)
             save_host_guest_dataframes(A_df, B_df, A_host_test_path, B_guest_test_path)
-            self.result = execute_sbt_command(self.config)
+            self.result = execute_sbt_command(self.config, self.logger)
 
             # 提取结果
             self.guest_result = self.result.get('guest', {})
@@ -87,7 +89,7 @@ class VF_SBT():
             return self.y_proba if return_proba else self.predict_result
 
         except Exception as e:
-            print(f"预测时发生错误: {e}")
+            self.logger.info(f"预测时发生错误: {e}")
             raise
 
 

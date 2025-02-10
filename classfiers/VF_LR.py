@@ -5,7 +5,7 @@ from vf4lr.client import Client
 from vf4lr.server import Server
 from vf4lr.train import vfl_lr_train, evaluation_get
 
-from utils.Logger import logger
+from utils.Logger import Logger
 
 
 class VF_LR(VF_BASE_CLF):
@@ -39,7 +39,7 @@ class VF_LR(VF_BASE_CLF):
         预测结果的概率分布，多列表示不同类别的概率。
     """
 
-    def __init__(self, learning_rate=0.2, epoch_num=5, batch_size=64):
+    def __init__(self, learning_rate=0.2, epoch_num=5, batch_size=64, log_level='ERROR'):
         """
         初始化 VF_LR 模型。
 
@@ -58,10 +58,12 @@ class VF_LR(VF_BASE_CLF):
             'batch_size': batch_size,
             'client_num': 2  # 固定为2个客户端
         }
+        
+        self.logger = Logger.create_new_logger(log_level)
 
         # 日志记录
-        logger.info("VF_LR 模型初始化完成。")
-        logger.info("模型配置: %s", self.config)
+        self.logger.info("VF_LR 模型初始化完成。")
+        self.logger.info("模型配置: %s", self.config)
 
     def fit(self, XA, XB, y):
         """
@@ -85,16 +87,16 @@ class VF_LR(VF_BASE_CLF):
         self.X_trains = [XA, XB]
 
         # 打印日志：显示当前训练数据的形状与类别数
-        logger.info(f"开始训练垂直联邦逻辑回归模型，客户端A训练数据形状: {XA.shape}, 客户端B训练数据形状: {XB.shape}, 标签大小: {len(y)}")
-        logger.info(f"检测到的类别数量: {class_num}")
-        logger.info("模型配置："
+        self.logger.info(f"开始训练垂直联邦逻辑回归模型，客户端A训练数据形状: {XA.shape}, 客户端B训练数据形状: {XB.shape}, 标签大小: {len(y)}")
+        self.logger.info(f"检测到的类别数量: {class_num}")
+        self.logger.info("模型配置："
                     f"学习率={self.config['learning_rate']}, "
                     f"训练轮数={self.config['epoch_num']}, "
                     f"批大小={self.config['batch_size']}, "
                     f"客户端数={self.config['client_num']}")
 
         # 在此处可进行更多的前置检查或数据处理
-        logger.info("完成模型初始化，等待调用 predict 或 predict_proba 进行训练和预测。")
+        self.logger.info("完成模型初始化，等待调用 predict 或 predict_proba 进行训练和预测。")
 
     def predict(self, XA, XB):
         """
@@ -117,7 +119,7 @@ class VF_LR(VF_BASE_CLF):
         self.config['test_size'] = len(XA)  # 仅需由其中一个的长度表示测试集大小
 
         # 日志
-        logger.info(f"开始进行预测，客户端A测试数据形状: {XA.shape}, 客户端B测试数据形状: {XB.shape}")
+        self.logger.info(f"开始进行预测，客户端A测试数据形状: {XA.shape}, 客户端B测试数据形状: {XB.shape}")
         return self._execute_prediction(XA, XB, return_proba=False)
 
     def predict_proba(self, XA, XB):
@@ -142,7 +144,7 @@ class VF_LR(VF_BASE_CLF):
         self.config['test_size'] = len(XA)
 
         # 日志
-        logger.info(f"开始进行预测概率计算，客户端A测试数据形状: {XA.shape}, 客户端B测试数据形状: {XB.shape}")
+        self.logger.info(f"开始进行预测概率计算，客户端A测试数据形状: {XA.shape}, 客户端B测试数据形状: {XB.shape}")
         return self._execute_prediction(XA, XB, return_proba=True)
 
     def _execute_prediction(self, XA, XB, return_proba):
@@ -171,36 +173,36 @@ class VF_LR(VF_BASE_CLF):
         X_test_s = self.X_test_s
 
         # 初始化 server
-        logger.info("初始化 Server 对象。")
+        self.logger.info("初始化 Server 对象。")
         server = Server(Y_train, config)
 
         # 初始化若干客户端 Client
-        logger.info("初始化 Client 对象。")
+        self.logger.info("初始化 Client 对象。")
         clients = []
         for i in range(config['client_num']):
             c = Client(X_train_s[i], X_test_s[i], config)
             c.set_id(i)
             clients.append(c)
-            logger.info(f"Client {i} 初始化完成，训练数据形状: {X_train_s[i].shape}, 测试数据形状: {X_test_s[i].shape}")
+            self.logger.info(f"Client {i} 初始化完成，训练数据形状: {X_train_s[i].shape}, 测试数据形状: {X_test_s[i].shape}")
 
         # 将客户端挂载到 Server
         server.attach_clients(clients)
-        logger.info("所有客户端挂载至 Server 完成，开始进行联邦训练。")
+        self.logger.info("所有客户端挂载至 Server 完成，开始进行联邦训练。")
 
         # 进行联邦训练
         vfl_lr_train(server, clients)
-        logger.info("联邦训练完成。")
+        self.logger.info("联邦训练完成。")
 
         # 获取训练结果：预测标签和预测概率
         self.y_proba, self.y_pred = evaluation_get(server, clients)
-        logger.info("获取最终预测结果。")
+        self.logger.info("获取最终预测结果。")
 
-        logger.info("模型训练完成并已缓存预测结果。")
+        self.logger.info("模型训练完成并已缓存预测结果。")
 
         # 根据需求返回预测标签或预测概率
         if return_proba:
-            logger.info(f"返回预测概率，形状: {self.y_proba.shape}")
+            self.logger.info(f"返回预测概率，形状: {self.y_proba.shape}")
             return self.y_proba
         else:
-            logger.info(f"返回预测标签，形状: {self.y_pred.shape}")
+            self.logger.info(f"返回预测标签，形状: {self.y_pred.shape}")
             return self.y_pred

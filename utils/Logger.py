@@ -10,7 +10,7 @@ class Logger:
     _logger = None  # 用于存储全局唯一的 logger 实例
 
     @staticmethod
-    def get_logger(log_level=logging.INFO):
+    def get_logger(log_level):
         """
         获取全局唯一的 logger 对象。
 
@@ -43,7 +43,7 @@ class Logger:
         return Logger._logger
 
     @staticmethod
-    def create_new_logger(log_level=logging.INFO):
+    def create_new_logger(log_level):
         """
         创建一个新的 logger 对象。
 
@@ -73,4 +73,4 @@ class Logger:
         return logging.getLevelName(level)
 
 
-logger = Logger.get_logger()
+logger = Logger.get_logger(logging.INFO)

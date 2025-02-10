@@ -6,7 +6,6 @@ import numpy as np
 
 from classfiers.VF_BASE import VF_BASE_REG
 
-logger = Logger.get_logger()
 
 
 class VF_LinearRegression(VF_BASE_REG):
@@ -33,10 +32,12 @@ class VF_LinearRegression(VF_BASE_REG):
         self.weightA = None  # 权重 A，初始化为 None
         self.weightB = None  # 权重 B，初始化为 None
         self.loss_history = []  # 用于记录每次迭代的损失值
+        log_level = config.get('log_level', 'ERROR')
+        self.logger = Logger.create_new_logger(log_level)
 
         # 日志记录
-        logger.info("VF_LinearRegression 模型初始化完成。")
-        logger.info("模型配置: %s", self.config)
+        self.logger.info("VF_LinearRegression 模型初始化完成。")
+        self.logger.info("模型配置: %s", self.config)
 
 
     def fit(self, XA, XB, y):
@@ -53,7 +54,7 @@ class VF_LinearRegression(VF_BASE_REG):
             目标标签，通常由B方持有。
         """
 
-        logger.info("开始构建A、B、C三个客户端...")
+        self.logger.info("开始构建A、B、C三个客户端...")
         # 初始化客户端对象
         client_a = ClientA(XA, self.config)
         client_b = ClientB(XB, y, self.config)
@@ -61,20 +62,20 @@ class VF_LinearRegression(VF_BASE_REG):
 
         # 建立客户端之间的连接
         for client, name in zip([client_a, client_b, client_c], ['A', 'B', 'C']):
-            logger.info(f"正在为客户端{name}建立连接...")
+            self.logger.info(f"正在为客户端{name}建立连接...")
             for target_name, target_client in zip(['A', 'B', 'C'], [client_a, client_b, client_c]):
                 if client is not target_client:
                     client.connect(target_name, target_client)
 
         # 查看连接信息
-        logger.info("查看各客户端的连接情况:")
+        self.logger.info("查看各客户端的连接情况:")
         for client, name in zip([client_a, client_b, client_c], ['A', 'B', 'C']):
-            logger.info(f"客户端{name}已连接: {list(client.other_client.keys())}")
+            self.logger.info(f"客户端{name}已连接: {list(client.other_client.keys())}")
 
         # 开始迭代训练
-        logger.info("开始训练迭代流程...")
+        self.logger.info("开始训练迭代流程...")
         for iteration in range(self.config['n_iters']):
-            logger.info(f"========== 第 {iteration + 1} 次迭代开始 ==========")
+            self.logger.info(f"========== 第 {iteration + 1} 次迭代开始 ==========")
             # 1. C方创建钥匙对，分发公钥给A和B
             client_c.generate_and_distribute_keys('A', 'B')
 
@@ -97,7 +98,7 @@ class VF_LinearRegression(VF_BASE_REG):
             client_a.receive_decrypted_data_and_update_parameters()
             client_b.receive_decrypted_data_and_update_parameters()
 
-            logger.info(f"========== 第 {iteration + 1} 次迭代结束 ==========")
+            self.logger.info(f"========== 第 {iteration + 1} 次迭代结束 ==========")
 
         # 获取历史损失
         self.loss_history = client_c.loss_history
@@ -106,7 +107,7 @@ class VF_LinearRegression(VF_BASE_REG):
         self.weightA = client_a.weights
         self.weightB = client_b.weights
 
-        logger.info("训练流程完成。")
+        self.logger.info("训练流程完成。")
 
     def predict(self, XA, XB):
         """
@@ -137,15 +138,15 @@ class VF_LinearRegression(VF_BASE_REG):
         """
 
         # 使用类实例的 logger 进行日志记录
-        logger.info("开始进行预测。")
-        logger.debug(f"XA shape: {XA.shape}, XB shape: {XB.shape}")
-        logger.debug(f"A方权重 shape: {self.weightA.shape}, B方权重 shape: {self.weightB.shape}")
+        self.logger.info("开始进行预测。")
+        self.logger.debug(f"XA shape: {XA.shape}, XB shape: {XB.shape}")
+        self.logger.debug(f"A方权重 shape: {self.weightA.shape}, B方权重 shape: {self.weightB.shape}")
 
         # 计算预测结果
         predictions = XA.dot(self.weightA) + XB.dot(self.weightB)
 
-        logger.debug(f"预测结果示例（前5条）: {predictions[:5]}")
-        logger.info("预测完成。")
+        self.logger.debug(f"预测结果示例（前5条）: {predictions[:5]}")
+        self.logger.info("预测完成。")
         return predictions
 
 
@@ -171,7 +172,7 @@ class Client:
         self.other_client = {}
 
         # 打印初始化信息
-        logger.info("Client 初始化完成，config: %s", self.config)
+        self.logger.info("Client 初始化完成，config: %s", self.config)
 
     def connect(self, client_name: str, target_client: "Client"):
         """
@@ -182,7 +183,7 @@ class Client:
             target_client (Client): 对方 Client 实例。
         """
         self.other_client[client_name] = target_client
-        logger.info("已建立连接：当前 Client -> [%s]", client_name)
+        self.logger.info("已建立连接：当前 Client -> [%s]", client_name)
 
     def send_data(self, data: dict, target_client: "Client"):
         """
@@ -220,7 +221,7 @@ class ClientA(Client):
 
         # 初始化权重为全零向量
         self.weights = np.zeros(self.m)
-        logger.info("%s 初始化完成，数据维度: %d x %d，初始权重长度: %d",
+        self.logger.info("%s 初始化完成，数据维度: %d x %d，初始权重长度: %d",
                          self.__class__.__name__, self.n, self.m, len(self.weights))
 
     def encrypt_and_send_data_to_B(self, client_b_name):
@@ -251,17 +252,17 @@ class ClientA(Client):
         """
 
         # 记录A方当前操作的日志信息
-        logger.info("A方: 开始计算并加密[[u_a]]和[[L_a]]，准备发送给B方。")
+        self.logger.info("A方: 开始计算并加密[[u_a]]和[[L_a]]，准备发送给B方。")
 
         # 从外部数据(dt)获取公钥
         dt = self.data
         assert 'public_key' in dt, "Error: 'public_key' from C in step 2 not received successfully"
         public_key = dt['public_key']
-        logger.debug("A方: 成功获取到C方分发的public_key。")
+        self.logger.debug("A方: 成功获取到C方分发的public_key。")
 
         # 计算 u_a = X * weights
         u_a = self.X.dot(self.weights)
-        logger.debug(f"A方: 计算得到的 u_a 形状为 {u_a.shape}。")
+        self.logger.debug(f"A方: 计算得到的 u_a 形状为 {u_a.shape}。")
 
         # 使用C方的公钥加密向量 u_a
         # 注意：如需进一步优化，可视情况批量加密或采用更高效的加解密策略
@@ -270,7 +271,7 @@ class ClientA(Client):
         # 计算损失 L_a = 0.5 * ∑(u_a^2) / n + 0.5 * λ * ∑(weights^2)
         u_a_square = u_a ** 2
         L_a = 0.5 * np.sum(u_a_square) / self.n + 0.5 * self.config['lambda'] * np.sum(self.weights ** 2)
-        logger.debug(f"A方: 计算得到的 L_a = {L_a}")
+        self.logger.debug(f"A方: 计算得到的 L_a = {L_a}")
 
         # 对 L_a 进行加密
         encrypted_L_a = public_key.encrypt(L_a)
@@ -282,9 +283,9 @@ class ClientA(Client):
         }
 
         # 将加密后的数据发送给 B 方
-        logger.info("A方: 加密后的[[u_a]]和[[L_a]]已准备就绪，开始发送给B方。")
+        self.logger.info("A方: 加密后的[[u_a]]和[[L_a]]已准备就绪，开始发送给B方。")
         self.send_data(data_to_B, self.other_client[client_b_name])
-        logger.info("A方: 成功将加密数据发送给B方。")
+        self.logger.info("A方: 成功将加密数据发送给B方。")
 
     def encrypt_and_send_masked_gradient_a_to_C(self, client_c_name):
         """
@@ -318,37 +319,37 @@ class ClientA(Client):
         """
 
         # 记录A方当前步骤的日志信息
-        logger.info("A方: 开始计算并发送[[masked_dL_a]]给C方。")
+        self.logger.info("A方: 开始计算并发送[[masked_dL_a]]给C方。")
 
         # 从外部数据 dt 中获取 B 方发送的加密差值 encrypted_d
         dt = self.data
         assert 'encrypted_d' in dt, "Error: 'encrypted_d' from B not received successfully"
         encrypted_d = dt['encrypted_d']
-        logger.debug("A方: 成功从 B 方获取加密差值 encrypted_d。")
+        self.logger.debug("A方: 成功从 B 方获取加密差值 encrypted_d。")
 
         # 这里直接使用线性回归的梯度公式（或其他您需要的公式）计算加密梯度 dL_a
         # dL_a = (1/n) * X.T * d + λ * w
         encrypted_dL_a = self.X.T.dot(encrypted_d) / self.n + self.config['lambda'] * self.weights
-        logger.debug("A方: 完成对加密梯度 dL_a 的计算。")
+        self.logger.debug("A方: 完成对加密梯度 dL_a 的计算。")
 
         # 生成掩码向量，以对梯度进行本地随机扰动
         mask = np.random.rand(len(encrypted_dL_a))
-        logger.debug(f"A方: 生成的随机掩码 mask 长度为 {len(mask)}。")
+        self.logger.debug(f"A方: 生成的随机掩码 mask 长度为 {len(mask)}。")
 
         # 将加密梯度与掩码相加，得到 masked_dL_a
         encrypted_masked_dL_a = encrypted_dL_a + mask
-        logger.debug("A方: 已将掩码与加密梯度 dL_a 相加，得到 masked_dL_a。")
+        self.logger.debug("A方: 已将掩码与加密梯度 dL_a 相加，得到 masked_dL_a。")
 
         # 将掩码保存在 A 方本地数据中，以便后续反掩码使用
         self.data.update({'mask': mask})
-        logger.debug("A方: 随机掩码已保存在本地数据结构 self.data['mask']。")
+        self.logger.debug("A方: 随机掩码已保存在本地数据结构 self.data['mask']。")
 
         # 封装要发送给 C 方的数据
         data_to_C = {'encrypted_masked_dL_a': encrypted_masked_dL_a}
 
         # 发送数据给 C 方
         self.send_data(data_to_C, self.other_client[client_c_name])
-        logger.info("A方: 成功将加密并掩码处理的梯度 masked_dL_a 发送给 C 方。")
+        self.logger.info("A方: 成功将加密并掩码处理的梯度 masked_dL_a 发送给 C 方。")
 
     def receive_decrypted_data_and_update_parameters(self):
         """
@@ -371,7 +372,7 @@ class ClientA(Client):
         """
 
         # 使用类实例的 logger 进行日志记录
-        logger.info("A方: 开始更新本地模型参数。")
+        self.logger.info("A方: 开始更新本地模型参数。")
 
         dt = self.data
         # 断言，确保掩码和解密后的梯度均已存在
@@ -384,14 +385,14 @@ class ClientA(Client):
 
         # 恢复真实梯度 dL_a
         dL_a = masked_dL_a - mask
-        logger.debug(f"A方: 恢复得到的 dL_a = {dL_a}")
+        self.logger.debug(f"A方: 恢复得到的 dL_a = {dL_a}")
 
         # 使用梯度更新本地模型参数
         self.weights = self.weights - self.config['lr'] * dL_a
-        logger.info(f"A方: 完成模型参数更新，新的 weights = {self.weights}")
+        self.logger.info(f"A方: 完成模型参数更新，新的 weights = {self.weights}")
 
         # 控制台输出（可酌情在生产环境中关闭或记录为 debug）
-        logger.info(f"A weights : {self.weights}")
+        self.logger.info(f"A weights : {self.weights}")
 
 
 class ClientB(Client):
@@ -416,7 +417,7 @@ class ClientB(Client):
 
         # 初始化权重为全零向量
         self.weights = np.zeros(self.m)
-        logger.info("%s 初始化完成，数据维度: %d x %d，初始权重长度: %d",
+        self.logger.info("%s 初始化完成，数据维度: %d x %d，初始权重长度: %d",
                          self.__class__.__name__, self.n, self.m, len(self.weights))
 
     def encrypt_and_send_data_to_A_and_C(self, client_A_name, client_C_name):
@@ -455,7 +456,7 @@ class ClientB(Client):
         """
 
         # 记录B方当前步骤的日志信息
-        logger.info(
+        self.logger.info(
             "B方: 开始计算加密的差值向量[[d]]并发送给A方，同时将[[L_b]]和[[L_ab]]加密后发送给C方。"
         )
 
@@ -463,11 +464,11 @@ class ClientB(Client):
         dt = self.data
         assert 'encrypted_u_a' in dt, "Error: 'encrypted_u_a' from A not received successfully"
         encrypted_u_a = dt['encrypted_u_a']
-        logger.debug("B方: 成功获取到 A 方的加密向量 encrypted_u_a。")
+        self.logger.debug("B方: 成功获取到 A 方的加密向量 encrypted_u_a。")
 
         # 计算 B 方本地的 u_b = X * weights
         u_b = self.X.dot(self.weights)
-        logger.debug(f"B方: 计算得到的 u_b 形状为 {u_b.shape}。")
+        self.logger.debug(f"B方: 计算得到的 u_b 形状为 {u_b.shape}。")
 
         # 计算残差 z_b = u_b - y
         z_b = u_b - self.y
@@ -480,21 +481,21 @@ class ClientB(Client):
         # 将加密后的 d 发送给 A 方
         data_to_A = {'encrypted_d': encrypted_d}
         self.data.update({'encrypted_d': encrypted_d})  # 将中间结果保存以备后续使用
-        logger.info("B方: 计算并封装了加密向量 d，准备发送给 A 方。")
+        self.logger.info("B方: 计算并封装了加密向量 d，准备发送给 A 方。")
 
         # 验证从 A 方获取的加密损失 encrypted_L_a
         assert 'encrypted_L_a' in dt, "Error: 'encrypted_L_a' from A not received successfully"
         encrypted_L_a = dt['encrypted_L_a']
-        logger.debug("B方: 成功获取到 A 方的加密损失 encrypted_L_a。")
+        self.logger.debug("B方: 成功获取到 A 方的加密损失 encrypted_L_a。")
 
         # 计算 B 方本地损失 L_b
         L_b = 0.5 * np.sum(z_b_square) / self.n + 0.5 * self.config['lambda'] * np.sum(self.weights ** 2)
-        logger.debug(f"B方: 计算得到的 L_b = {L_b}")
+        self.logger.debug(f"B方: 计算得到的 L_b = {L_b}")
 
         # 计算交互项 L_ab = ∑(encrypted_u_a * z_b) / n
         # 注意 encrypted_u_a 和 z_b 的运算方式，以及同态加法/乘法是否正确。
         L_ab = np.sum(encrypted_u_a * z_b) / self.n
-        logger.debug(f"B方: 计算得到的 L_ab (同态加密场景下为加密/明文混合表达) = {L_ab}")
+        self.logger.debug(f"B方: 计算得到的 L_ab (同态加密场景下为加密/明文混合表达) = {L_ab}")
 
         # 计算加密的 L = encrypted_L_a + L_b + L_ab
         # 其中 encrypted_L_a 可视为同态加密的数值，L_b 和 L_ab 是明文，直接相加表示对加密结果的同态运算。
@@ -502,14 +503,14 @@ class ClientB(Client):
 
         # 将加密后的整体损失加和发送给 C 方
         data_to_C = {'encrypted_L': encrypted_L}
-        logger.info("B方: 计算并封装了加密的总体损失项 L，准备发送给 C 方。")
+        self.logger.info("B方: 计算并封装了加密的总体损失项 L，准备发送给 C 方。")
 
         # 分别发送数据给 A 方和 C 方
         self.send_data(data_to_A, self.other_client[client_A_name])
-        logger.info("B方: 已成功将加密向量 d 发送给 A 方。")
+        self.logger.info("B方: 已成功将加密向量 d 发送给 A 方。")
 
         self.send_data(data_to_C, self.other_client[client_C_name])
-        logger.info("B方: 已成功将加密的总体损失 L 发送给 C 方。")
+        self.logger.info("B方: 已成功将加密的总体损失 L 发送给 C 方。")
 
     def encrypt_and_send_masked_gradient_b_to_C(self, client_C_name):
         """
@@ -542,35 +543,35 @@ class ClientB(Client):
         - 若对安全性有更高要求，可以进一步对 `mask` 也采用安全多方计算或同态加密。
         """
 
-        # 使用类实例的 logger，而非直接调用 logger.info，保证日志记录更灵活
-        logger.info("B方: 开始计算并发送[[masked_dL_b]]给C方。")
+        # 使用类实例的 logger，而非直接调用 self.logger.info，保证日志记录更灵活
+        self.logger.info("B方: 开始计算并发送[[masked_dL_b]]给C方。")
 
         # 从外部数据 dt 中获取加密差值 encrypted_d
         dt = self.data
         assert 'encrypted_d' in dt, "Error: 'encrypted_d' from B not received successfully"
         encrypted_d = dt['encrypted_d']
-        logger.debug("B方: 成功获取到加密差值 encrypted_d。")
+        self.logger.debug("B方: 成功获取到加密差值 encrypted_d。")
 
         # 计算加密的梯度 dL_b
         # dL_b = (X^T * encrypted_d) / n + λ * weights
         encrypted_dL_b = self.X.T.dot(encrypted_d) / self.n + self.config['lambda'] * self.weights
-        logger.debug("B方: 完成加密梯度 dL_b 的计算。")
+        self.logger.debug("B方: 完成加密梯度 dL_b 的计算。")
 
         # 生成随机掩码并与加密梯度相加
         mask = np.random.rand(len(encrypted_dL_b))
         encrypted_masked_dL_b = encrypted_dL_b + mask
-        logger.debug("B方: 已将随机掩码与加密梯度 dL_b 相加，得到 masked_dL_b。")
+        self.logger.debug("B方: 已将随机掩码与加密梯度 dL_b 相加，得到 masked_dL_b。")
 
         # 将随机掩码保存到 B 方本地，以便后续解密时使用
         self.data.update({'mask': mask})
-        logger.debug("B方: 掩码已保存在 self.data['mask'] 以备后续使用。")
+        self.logger.debug("B方: 掩码已保存在 self.data['mask'] 以备后续使用。")
 
         # 封装要发送给 C 方的数据
         data_to_C = {'encrypted_masked_dL_b': encrypted_masked_dL_b}
 
         # 发送数据给 C 方
         self.send_data(data_to_C, self.other_client[client_C_name])
-        logger.info("B方: 成功将加密并掩码处理的梯度 masked_dL_b 发送给 C 方。")
+        self.logger.info("B方: 成功将加密并掩码处理的梯度 masked_dL_b 发送给 C 方。")
 
     def receive_decrypted_data_and_update_parameters(self):
         """
@@ -593,7 +594,7 @@ class ClientB(Client):
         """
 
         # 使用类实例的 logger 进行日志记录
-        logger.info("B方: 开始更新本地模型参数。")
+        self.logger.info("B方: 开始更新本地模型参数。")
 
         dt = self.data
         # 断言，确保掩码和解密后的梯度均已存在
@@ -606,14 +607,14 @@ class ClientB(Client):
 
         # 恢复真实梯度 dL_b
         dL_b = masked_dL_b - mask
-        logger.debug(f"B方: 恢复得到的 dL_b = {dL_b}")
+        self.logger.debug(f"B方: 恢复得到的 dL_b = {dL_b}")
 
         # 使用梯度更新本地模型参数
         self.weights = self.weights - self.config['lr'] * dL_b
-        logger.info(f"B方: 完成模型参数更新，新的 weights = {self.weights}")
+        self.logger.info(f"B方: 完成模型参数更新，新的 weights = {self.weights}")
 
         # 控制台输出（可酌情在生产环境中关闭或记录为 debug）
-        logger.info(f"B weights : {self.weights}")
+        self.logger.info(f"B weights : {self.weights}")
 
 
 class ClientC(Client):
@@ -648,7 +649,7 @@ class ClientC(Client):
         # 记录训练过程中的损失
         self.loss_history = []
 
-        logger.info("%s 初始化完成，A_data_shape=%s, B_data_shape=%s",
+        self.logger.info("%s 初始化完成，A_data_shape=%s, B_data_shape=%s",
                          self.__class__.__name__, self.A_data_shape, self.B_data_shape)
 
     def generate_and_distribute_keys(self, client_a_name, client_b_name):
@@ -674,7 +675,7 @@ class ClientC(Client):
         3. 该函数只负责密钥的分发，后续对private_key的使用需要在C方本地完成。
         """
         # 记录C方的操作日志
-        logger.info("C方正在生成密钥对并分发公钥给A、B方。")
+        self.logger.info("C方正在生成密钥对并分发公钥给A、B方。")
 
         # 调用外部方法 generate_paillier_keypair 生成公钥和私钥
         self.public_key, self.private_key = SimpleHomomorphicEncryption.generate_paillier_keypair()
@@ -683,11 +684,11 @@ class ClientC(Client):
         data_to_AB = {'public_key': self.public_key}
 
         # 将公钥分发给A方
-        logger.info(f"向客户端 {client_a_name} 发送公钥。")
+        self.logger.info(f"向客户端 {client_a_name} 发送公钥。")
         self.send_data(data_to_AB, self.other_client[client_a_name])
 
         # 将公钥分发给B方
-        logger.info(f"向客户端 {client_b_name} 发送公钥。")
+        self.logger.info(f"向客户端 {client_b_name} 发送公钥。")
         self.send_data(data_to_AB, self.other_client[client_b_name])
 
     def decrypt_and_distribute_results(self, client_A_name, client_B_name):
@@ -724,8 +725,8 @@ class ClientC(Client):
         - 如果在生产环境或更复杂的隐私场景中，需要考虑对解密后的打印或日志进行脱敏或访问控制。
         """
 
-        # 使用类实例的logger，而不是全局的logger.info
-        logger.info("C方: 正在解密数据，并将解密结果分别发送给A方和B方。")
+        # 使用类实例的logger，而不是全局的self.logger.info
+        self.logger.info("C方: 正在解密数据，并将解密结果分别发送给A方和B方。")
 
         dt = self.data
         # 断言检查，确保必要的加密数据均已存在
@@ -741,8 +742,8 @@ class ClientC(Client):
         # 解密总损失 L
         L = self.private_key.decrypt(encrypted_L)
         # 这里的打印最好显眼一点，方便测试时一眼看到
-        logger.info(f"***************, {L} , ***************,")
-        logger.info(f"C方: 解密后得到的损失 L = {L}")
+        self.logger.info(f"***************, {L} , ***************,")
+        self.logger.info(f"C方: 解密后得到的损失 L = {L}")
 
         # 记录解密后的损失值 L
         self.loss_history.append(L)
@@ -750,7 +751,7 @@ class ClientC(Client):
         # 解密 masked_dL_b、masked_dL_a
         masked_dL_b = np.array([self.private_key.decrypt(x) for x in encrypted_masked_dL_b])
         masked_dL_a = np.array([self.private_key.decrypt(x) for x in encrypted_masked_dL_a])
-        logger.debug("C方: 完成对 masked_dL_b、masked_dL_a 的解密。")
+        self.logger.debug("C方: 完成对 masked_dL_b、masked_dL_a 的解密。")
 
         # 需要发送给 A、B 方的数据
         data_to_A = {'masked_dL_a': masked_dL_a}
@@ -758,7 +759,7 @@ class ClientC(Client):
 
         # 发送数据给 A、B 方
         self.send_data(data_to_A, self.other_client[client_A_name])
-        logger.info("C方: 解密后的 masked_dL_a 已发送给 A 方。")
+        self.logger.info("C方: 解密后的 masked_dL_a 已发送给 A 方。")
 
         self.send_data(data_to_B, self.other_client[client_B_name])
-        logger.info("C方: 解密后的 masked_dL_b 已发送给 B 方。")
+        self.logger.info("C方: 解密后的 masked_dL_b 已发送给 B 方。")

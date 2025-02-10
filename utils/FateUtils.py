@@ -265,7 +265,7 @@ def df_to_data(ctx, df, has_label=True):
     return fate_df
 
 
-def execute_sbt_command(config):
+def execute_sbt_command(config, logger):
     """
     执行 SBT 脚本命令，检查执行结果，并加载 guest 和 host 的结果文件。
 
@@ -295,15 +295,15 @@ def execute_sbt_command(config):
         result = subprocess.run(command, capture_output=True, text=True)
 
         # 打印输出结果
-        print("Standard Output:", result.stdout)
-        print("Standard Error:", result.stderr)
+        logger.info("Standard Output:", result.stdout)
+        logger.info("Standard Error:", result.stderr)
 
         # 检查命令是否成功运行
         if result.returncode != 0:
-            print("Command failed with return code:", result.returncode)
+            logger.error("Command failed with return code:", result.returncode)
             raise RuntimeError(f"Command execution failed with return code {result.returncode}")
 
-        print("Command executed successfully.")
+        logger.info("Command executed successfully.")
 
         # 加载 guest 和 host 的结果
         guest_result = load_from_pkl(SBT_PKL_GUEST_PATH)
@@ -315,7 +315,7 @@ def execute_sbt_command(config):
             'host': host_result
         }
     except Exception as e:
-        print(f"An error occurred during command execution: {e}")
+        logger.error(f"An error occurred during command execution: {e}")
         raise
 
 
