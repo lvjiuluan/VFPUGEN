@@ -1,4 +1,5 @@
 import os
+from random import random
 
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
@@ -102,7 +103,7 @@ def evaluate_imputed_data_various_metric(orig: pd.DataFrame, imputed: pd.DataFra
                 - 'rmse_all': 所有列的 RMSE。
                 - 'rmse_categorical': 分类列的 RMSE。
                 - 'rmse_numerical': 数值列的 RMSE。
-                - 'rmse_sum': 分类列和数值列分别计算 RMSE 后相加的结果。
+                - 'rmse_avg': 分类列和数值列分别计算 RMSE 后相加的结果取平均。
                 - 'cross_entropy_categorical': 分类列的交叉熵（假设 one-hot 编码，每行的交叉熵为 -log(预测概率)）。
                 - 'rmse_numerical_for_cross_entropy': 数值列的 RMSE（用于方法3）。
                 - 'f1_categorical': 分类列的平均 F1 分数（先将 one-hot 向量转换为类别标签）。
@@ -137,13 +138,13 @@ def evaluate_imputed_data_various_metric(orig: pd.DataFrame, imputed: pd.DataFra
 
     # 2. 将分类列和数值列的 RMSE 相加（如果其中一部分不存在，则只取存在的那部分）
     if rmse_categorical is not None and rmse_numerical is not None:
-        rmse_sum = rmse_categorical + rmse_numerical
+        rmse_avg = (rmse_categorical + rmse_numerical) / 2
     elif rmse_categorical is not None:
-        rmse_sum = rmse_categorical
+        rmse_avg = rmse_categorical
     elif rmse_numerical is not None:
-        rmse_sum = rmse_numerical
+        rmse_avg = rmse_numerical
     else:
-        rmse_sum = None
+        rmse_avg = None
 
     # ----------------------------
     # 3. 分类列用交叉熵，数值列用 RMSE
@@ -193,8 +194,8 @@ def evaluate_imputed_data_various_metric(orig: pd.DataFrame, imputed: pd.DataFra
         print(f"2a. 分类列的 RMSE: {rmse_categorical:.6f}")
     if rmse_numerical is not None:
         print(f"2b. 数值列的 RMSE: {rmse_numerical:.6f}")
-    if rmse_sum is not None:
-        print(f"2. 分类列和数值列分别计算 RMSE 后相加: {rmse_sum:.6f}")
+    if rmse_avg is not None:
+        print(f"2. 分类列和数值列分别计算 RMSE 后相加: {rmse_avg:.6f}")
     if cross_entropy_categorical is not None:
         print(f"3a. 分类列的交叉熵: {cross_entropy_categorical:.6f}")
     if rmse_numerical_for_cross_entropy is not None:
@@ -209,7 +210,7 @@ def evaluate_imputed_data_various_metric(orig: pd.DataFrame, imputed: pd.DataFra
         'rmse_all': rmse_all,
         'rmse_categorical': rmse_categorical,
         'rmse_numerical': rmse_numerical,
-        'rmse_sum': rmse_sum,
+        'rmse_avg': rmse_avg,
         'cross_entropy_categorical': cross_entropy_categorical,
         'rmse_numerical_for_cross_entropy': rmse_numerical_for_cross_entropy,
         'f1_categorical': f1_categorical,
@@ -289,3 +290,22 @@ def label_encode_columns(df: pd.DataFrame, category_columns: list) -> pd.DataFra
             print(f"Warning: Column '{col}' not found in DataFrame")
 
     return df
+
+
+def split_list_by_rate(lst, rate):
+    # 先打乱列表
+    random.shuffle(lst)
+
+    # 计算每一份的大小
+    n = len(lst)
+    splits = []
+    start = 0
+
+    # 按照rate的比例来分割
+    for r in rate:
+        # 当前分割的结束位置
+        end = start + int(r * n)
+        splits.append(lst[start:end])
+        start = end
+
+    return splits

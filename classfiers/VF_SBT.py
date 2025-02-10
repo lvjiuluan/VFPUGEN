@@ -6,6 +6,7 @@ import subprocess
 import sys
 from utils.Logger import Logger
 
+
 class VF_SBT():
     def __init__(self, config):
         """
@@ -23,12 +24,11 @@ class VF_SBT():
             self.logger.info(f"初始化时发生错误: {e}")
             raise
 
-    def fit(self, XA, XB, y):
+    def fit(self, XA, XB, y, objective, num_class):
         """
         训练 SBT 模型。
         """
         try:
-            objective, num_class = determine_task_type(y)
             self.config['objective'] = objective
             self.config['num_class'] = num_class
             self.objective = SbtObjective(objective)
@@ -102,7 +102,8 @@ class VF_SBT_CLF(VF_SBT, VF_BASE_CLF):
         """
         调用基类的 fit 方法。
         """
-        super().fit(XA, XB, y)
+        objective, num_class = determine_task_type(y)
+        super().fit(XA, XB, y, objective, num_class)
 
     def predict(self, XA, XB):
         """
@@ -126,7 +127,8 @@ class VF_SBT_REG(VF_SBT, VF_BASE_REG):
         """
         调用基类的 fit 方法。
         """
-        super().fit(XA, XB, y)
+        objective, num_class = SbtObjective.REGRESSION_L2, None
+        super().fit(XA, XB, y, objective, num_class)
 
     def predict(self, XA, XB):
         """

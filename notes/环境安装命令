@@ -25,7 +25,6 @@ git clone https://github.com/lvjiuluan/VFPUGEN.git
 # jupyter 单元格顶部固定代码
 import sys
 sys.path.append(r'D:\PyCharmProjects\VFPUGEN')
-sys.path.append(r'C:\Users\Administrator\PycharmProjects\VFPUGEN')
 sys.path.append(r'/root/VFPUGEN')
 sys.path.append(r'D:\PycharmProjects\VFPUGEN')
 %load_ext autoreload

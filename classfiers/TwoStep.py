@@ -29,7 +29,7 @@ class TwoStep:
         self.logger.info("TwoStep 类已初始化: max_iter=%d, k=%.2f, base_classifier=%s, base_regressor=%s",
                          max_iter, k, type(base_classifier).__name__, type(base_regressor).__name__)
 
-    def fit(self, X_L, y_L, X_U):
+    def fit(self, X_L, y_L, X_U, task_type):
         """
             训练 TwoStep 模型。
 
@@ -45,7 +45,7 @@ class TwoStep:
         self.logger.info("无标签数据 (U): %d 样本", X_U.shape[0])
 
         # 根据有标签数据的情况，判断任务类型
-        task_type = determine_task_type(y_L)
+        # task_type = determine_task_type(y_L)
         self.logger.info("任务类型判定结果: %s", task_type)
 
         if task_type == "classification":
@@ -63,7 +63,7 @@ class TwoStep:
             self.__fit__reg(X_L, y_L, X_U)
         else:
             self.logger.warning("无法确定任务类型，默认视为分类任务处理。")
-            self.__fit__clf(X_L, y_L, X_U)
+            raise TypeError(f"task_type = {task_type}, 参数类型错误")
 
         self.logger.info("TwoStep 模型训练完成。")
         return self
