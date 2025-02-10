@@ -1,0 +1,6 @@
+.virtual_documents/
+.idea/
+**/.ipynb_checkpoints/
+**/saved_models*
+**/.virtual_documents/
+**/__pycache__/

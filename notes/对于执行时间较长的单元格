@@ -1,0 +1,24 @@
+对于预估时间可能执行较长的单元格，不要在jupyter里面执行:
+1. 将jupyter转py文件, FateUtils下的convert_ipynb_to_py方法
+2. 假设第一步转为scr.py，在命令行窗口用python运行py文件，后台运行
+3. 安装screen，大多数linux系统都已经默认安装
+    sudo apt update
+    sudo apt install screen
+4. screen -S runScr
+5. ctrl-a d   # 挂起当前会话
+6. screen -r runScr # 恢复指定会话
+7. screen -S 1077.runScr -X quit # 删除会话
+
+
+
+# screen 其他命令
+
+screen -d id # 挂起某个会话
+echo $STY # 查看当前会话名称
+screen -ls # 查看所有会话
+
+# 解决有多个会话attach
+如果有多个会话attach，用 screen -d id 命令挂起会话
+
+# 解决 There is no screen to be resumed matching
+直接用  screen -d id 命令挂起这个会话

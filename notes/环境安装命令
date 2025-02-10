@@ -1,0 +1,35 @@
+# AUTO DL
+source /etc/network_turbo
+unset http_proxy && unset https_proxy
+
+# FATE requires Python >= 3.10
+conda create -n fate_env python=3.10
+conda activate fate_env
+
+# 安装 requirements.txt
+pip install -r requirements.txt
+
+# 安装 FATE
+pip install pyfate==2.2.0
+pip install matplotlib
+pip install ctgan
+
+# 安装 ipykernel
+conda install -c anaconda ipykernel
+python -m ipykernel install --user --name=fate_env
+
+# 下载项目
+git clone https://github.com/lvjiuluan/VFPUMC02.git
+
+
+# jupyter 单元格顶部固定代码
+import sys
+sys.path.append(r'D:\PyCharmProjects\VFPUGEN')
+sys.path.append(r'C:\Users\Administrator\PycharmProjects\VFPUGEN')
+sys.path.append(r'/root/VFPUGEN')
+%load_ext autoreload
+%autoreload 2
+
+%matplotlib inline
+
+# 想要单元格不输出内容，在语句后面加一个分号即可

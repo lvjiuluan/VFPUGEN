@@ -1,0 +1,7 @@
+pyfate==2.2.0
+ctgan
+pandas
+matplotlib
+scikit-learn
+pyyaml
+numpy
