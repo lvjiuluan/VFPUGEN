@@ -8,6 +8,7 @@ import shutil
 from urllib.parse import urlparse
 import numpy as np
 from sklearn.metrics import f1_score
+from sklearn.preprocessing import LabelEncoder
 
 def prepare_updated_pollution_dataset(file_path):
     # 使用os.path.join构建文件路径
@@ -216,8 +217,7 @@ def evaluate_imputed_data_various_metric(orig: pd.DataFrame, imputed: pd.DataFra
     return metrics
 
 
-import pandas as pd
-from sklearn.preprocessing import LabelEncoder
+
 
 def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     """
