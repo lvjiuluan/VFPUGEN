@@ -282,23 +282,24 @@ def preprocess_features(df, category_columns, numerical_columns, target_variable
     print("开始对类别特征进行 One-Hot 编码...")
     # 进行 One-Hot 编码
     enc = OneHotEncoder()
-    df_category_enc = pd.DataFrame(enc.fit_transform(df[category_columns]),
-                                   columns=enc.get_feature_names_out()).astype(int)
+    enc.fit(df[category_columns])
+    df_category_enc = pd.DataFrame(enc.transform(df[category_columns]).toarray(), columns=enc.get_feature_names_out())
+    df_category_enc = df_category_enc.astype('int')
 
     print("类别特征 One-Hot 编码完成。")
 
     print("开始对数值特征进行标准化处理...")
     # 进行标准化
     scaler = StandardScaler()
-    df_numerical_scaled = pd.DataFrame(scaler.fit_transform(df[numerical_columns]),
-                                       columns=scaler.feature_names_in_)
+    scaler.fit(df[numerical_columns])
+    df_numerical_scaler = pd.DataFrame(scaler.transform(df[numerical_columns]), columns=scaler.feature_names_in_)
     print("数值特征标准化处理完成。")
 
     # 组合编码后的特征数据
     if target_variable is not None:
-        df_onehot_encoded = pd.concat([df_category_enc, df_numerical_scaled, df[target_variable].to_frame()], axis=1)
+        df_onehot_encoded = pd.concat([df_category_enc, df_numerical_scaler, df[target_variable].to_frame()], axis=1)
     else:
-        df_onehot_encoded = pd.concat([df_category_enc, df_numerical_scaled], axis=1)
+        df_onehot_encoded = pd.concat([df_category_enc, df_numerical_scaler], axis=1)
 
     print("开始对类别特征进行标签编码...")
     # 进行标签编码

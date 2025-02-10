@@ -36,57 +36,59 @@ from consts.Constants import DATASETS_PATH
 from utils.DatasetsPrepareUtils import download_file, preprocess_dataframe, preprocess_features
 
 # 下载原始csv文件
-download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/main/bank_orig.csv', DATASETS_PATH, 'bank_orig.csv')
-download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/main/census_orig.csv', DATASETS_PATH, 'census_orig.csv')
-download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/main/credit_orig.csv', DATASETS_PATH, 'credit_orig.csv')
-
+download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/main/bank_orig.csv', DATASETS_PATH,
+              'bank_orig.csv')
+download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/main/census_orig.csv', DATASETS_PATH,
+              'census_orig.csv')
+download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/main/credit_orig.csv', DATASETS_PATH,
+              'credit_orig.csv')
 
 # 缺失值、处理，标签列编码，标签列统一编码为y 特征列 + y
 # bank
-df = pd.read_csv(os.path.join(DATASETS_PATH,'bank_orig.csv'))
+df = pd.read_csv(os.path.join(DATASETS_PATH, 'bank_orig.csv'))
 df = preprocess_dataframe(df)
-df.to_csv(os.path.join(DATASETS_PATH,'bank_clean.csv'),index=None)
+df.to_csv(os.path.join(DATASETS_PATH, 'bank_clean.csv'), index=None)
 
 # census
-df = pd.read_csv(os.path.join(DATASETS_PATH,'census_orig.csv'))
+df = pd.read_csv(os.path.join(DATASETS_PATH, 'census_orig.csv'))
 df = preprocess_dataframe(df)
-df.to_csv(os.path.join(DATASETS_PATH,'census_clean.csv'),index=None)
+df.to_csv(os.path.join(DATASETS_PATH, 'census_clean.csv'), index=None)
 
 # credit
-df = pd.read_csv(os.path.join(DATASETS_PATH,'credit_orig.csv'),skiprows=1)
+df = pd.read_csv(os.path.join(DATASETS_PATH, 'credit_orig.csv'), skiprows=1)
 df = df.drop(columns=['ID'])
 df = preprocess_dataframe(df)
-df.to_csv(os.path.join(DATASETS_PATH,'credit_clean.csv'),index=None)
+df.to_csv(os.path.join(DATASETS_PATH, 'credit_clean.csv'), index=None)
 
 # one-hot 编码，归一化
 
 # bank
-df = pd.read_csv(os.path.join(DATASETS_PATH,'bank_clean.csv'))
+df = pd.read_csv(os.path.join(DATASETS_PATH, 'bank_clean.csv'))
 category_columns = ['job', 'marital', 'education', 'default', 'housing', 'loan', 'contact', 'month', 'day_of_week',
                     'poutcome']
 numerical_columns = ['age', 'duration', 'campaign', 'pdays', 'previous', 'emp.var.rate', 'cons.price.idx',
                      'cons.conf.idx', 'euribor3m', 'nr.employed']
 target_variable = 'y'
-df_one, df_label = preprocess_features(df,category_columns,numerical_columns,target_variable)
-df_one.to_csv(os.path.join(DATASETS_PATH,'bank_coded_onehot.csv'),index=None)
-df_label.to_csv(os.path.join(DATASETS_PATH,'bank_coded_label.csv'),index=None)
+df_one, df_label = preprocess_features(df, category_columns, numerical_columns, target_variable)
+df_one.to_csv(os.path.join(DATASETS_PATH, 'bank_coded_onehot.csv'), index=None)
+df_label.to_csv(os.path.join(DATASETS_PATH, 'bank_coded_label.csv'), index=None)
 
 # census
-df = pd.read_csv(os.path.join(DATASETS_PATH,'census_clean.csv'))
+df = pd.read_csv(os.path.join(DATASETS_PATH, 'census_clean.csv'))
 category_columns = ['workclass', 'education', 'marital-status', 'occupation', 'relationship', 'race', 'sex',
                     'native-country']
 numerical_columns = ['age', 'fnlwgt', 'education-num', 'capital-gain', 'capital-loss', 'hours-per-week']
 target_variable = 'y'
-df_one, df_label = preprocess_features(df,category_columns,numerical_columns,target_variable)
-df_one.to_csv(os.path.join(DATASETS_PATH,'census_coded_onehot.csv'),index=None)
-df_label.to_csv(os.path.join(DATASETS_PATH,'census_coded_label.csv'),index=None)
+df_one, df_label = preprocess_features(df, category_columns, numerical_columns, target_variable)
+df_one.to_csv(os.path.join(DATASETS_PATH, 'census_coded_onehot.csv'), index=None)
+df_label.to_csv(os.path.join(DATASETS_PATH, 'census_coded_label.csv'), index=None)
 
 # credit
-df = pd.read_csv(os.path.join(DATASETS_PATH,'credit_clean.csv'))
+df = pd.read_csv(os.path.join(DATASETS_PATH, 'credit_clean.csv'))
 category_columns = ['SEX', 'EDUCATION', 'MARRIAGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6']
 numerical_columns = ['LIMIT_BAL', 'AGE', 'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5', 'BILL_AMT6',
                      'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6']
 target_variable = 'y'
-df_one, df_label = preprocess_features(df,category_columns,numerical_columns,target_variable)
-df_one.to_csv(os.path.join(DATASETS_PATH,'credit_coded_onehot.csv'),index=None)
-df_label.to_csv(os.path.join(DATASETS_PATH,'credit_coded_label.csv'),index=None)
+df_one, df_label = preprocess_features(df, category_columns, numerical_columns, target_variable)
+df_one.to_csv(os.path.join(DATASETS_PATH, 'credit_coded_onehot.csv'), index=None)
+df_label.to_csv(os.path.join(DATASETS_PATH, 'credit_coded_label.csv'), index=None)
