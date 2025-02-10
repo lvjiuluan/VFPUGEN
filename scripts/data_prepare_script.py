@@ -33,7 +33,7 @@ sys.path.append(r'/root/VFPUGEN')
 sys.path.append(r'D:\PycharmProjects\VFPUGEN')
 
 from consts.Constants import DATASETS_PATH
-from utils.DatasetsPrepareUtils import download_file
+from utils.DatasetsPrepareUtils import download_file, preprocess_dataframe
 
 # 下载原始csv文件
 download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/main/bank_orig.csv', DATASETS_PATH, 'bank_orig.csv')
@@ -42,7 +42,11 @@ download_file('https://raw.githubusercontent.com/lvjiuluan/DataSets/refs/heads/m
 
 
 # 缺失值、处理，标签列编码，标签列统一编码为y 特征列 + y
+# bank
 df = pd.read_csv(os.path.join(DATASETS_PATH,'bank_orig.csv'))
+df = preprocess_dataframe(df)
+df.to_csv(os.path.join(DATASETS_PATH,'bank_clean.csv'))
+# census
 
 
 

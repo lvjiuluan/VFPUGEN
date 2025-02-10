@@ -217,8 +217,6 @@ def evaluate_imputed_data_various_metric(orig: pd.DataFrame, imputed: pd.DataFra
     return metrics
 
 
-
-
 def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     """
     对输入的 DataFrame 进行数据预处理：
@@ -233,12 +231,13 @@ def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     pd.DataFrame: 处理后的 DataFrame，最后一列的列名为 'y'
     """
     df = df.copy()  # 避免修改原始 df
+
     # 处理缺失值
     for col in df.columns:
         if df[col].dtype == 'object':  # 类别型数据
-            df[col].fillna(df[col].mode()[0], inplace=True)  # 用众数填充
+            df[col] = df[col].fillna(df[col].mode()[0])  # 用众数填充
         else:  # 数值型数据
-            df[col].fillna(df[col].mean(), inplace=True)  # 用均值填充
+            df[col] = df[col].fillna(df[col].mean())  # 用均值填充
 
     # 处理标签列
     label_col = df.columns[-1]  # 获取最后一列的列名
@@ -247,6 +246,6 @@ def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df[label_col] = df[label_col].astype(int)  # 转换为 int 类型
 
     # 统一标签列名为 'y'
-    df.rename(columns={label_col: 'y'}, inplace=True)
+    df = df.rename(columns={label_col: 'y'})
 
     return df
